@@ -1,0 +1,10 @@
+{
+  "simulator": {
+    "provider": "openai",
+    "model": "gpt-4o-mini"
+  },
+  "responder": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6"
+  }
+}

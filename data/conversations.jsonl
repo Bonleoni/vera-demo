@@ -1,0 +1,22 @@
+{"convId":"FRM-000001","ts":"2026-08-24T21:34:50.711Z","direction":"in","text":"Merhaba P2 test 1"}
+{"convId":"FRM-000001","ts":"2026-08-24T21:34:52.775Z","direction":"out","text":"Merhaba! Size nasıl yardımcı olabilirim?","latencyMs":2082,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000001","ts":"2026-08-24T21:34:52.908Z","direction":"in","text":"Merhaba P2 test 2"}
+{"convId":"FRM-000001","ts":"2026-08-24T21:34:54.967Z","direction":"out","text":"Merhaba! Ne üzerinde konuşmak istersiniz?","latencyMs":2068,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000002","ts":"2026-08-24T21:43:52.146Z","direction":"in","text":"bugün akşam yine yemeği kaçırdım galiba"}
+{"convId":"FRM-000002","ts":"2026-08-24T21:43:54.196Z","direction":"out","text":"Ne oldu akşamüstü, nasıl bir gün geçirdin?","latencyMs":2055,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000002","ts":"2026-08-24T21:44:32.192Z","direction":"in","text":"patron ile tartıştık, çok fazla gerginim, sinirliyim.\nsinirim geçmedi."}
+{"convId":"FRM-000002","ts":"2026-08-24T21:44:35.266Z","direction":"out","text":"O gerilim hâlâ üstünde oturuyorsa, akşam yemekte kendini tutmak çok zor oluyor.\n\nPeki bu tür günlerde genellikle ne yiyorsun, yoksa ne yediğinin farkında bile olmadan mı geçiyor?","latencyMs":3082,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000002","ts":"2026-08-24T21:45:34.472Z","direction":"in","text":"önümde ne olursa alıyorum. herhangi bir tercihim yok. buzdolabını da açıp bir şeyler alıyorum."}
+{"convId":"FRM-000002","ts":"2026-08-24T21:45:38.682Z","direction":"out","text":"Yani o anlarda aslında yemek istemiyorsun, sinirden bir çıkış arıyorsun.\n\nBu durum sık mı oluyor, yoksa bugün özellikle mi zordu?","latencyMs":4217,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000002","ts":"2026-08-24T21:46:08.093Z","direction":"in","text":"bu son zamanlarda çok sık olmaya başladı."}
+{"convId":"FRM-000002","ts":"2026-08-24T21:46:11.774Z","direction":"out","text":"Anlıyorum. Yani akşamları patronla ya da işte gergin bir gün geçirince, buzdolabı bir nevi o gerilimi boşaltmanın yolu haline gelmiş.\n\nYemek aslında açlıkla ilgili değil, o siniri bir yere koymak için.","latencyMs":3688,"model":"claude-sonnet-4-6"}
+{"convId":"FRM-000002","ts":"2026-08-25T18:56:37.346Z","direction":"in","text":"test"}
+{"convId":"FRM-000002","ts":"2026-08-25T18:56:39.011Z","direction":"out","text":"Merhaba! Size nasıl yardımcı olabilirim?","latencyMs":1673,"model":"claude-sonnet-4-6","meta":{"proactive":false}}
+{"convId":"FRM-000003","ts":"2026-08-26T20:04:04.692Z","direction":"in","text":"debug_testi"}
+{"convId":"FRM-000003","ts":"2026-08-26T20:04:06.678Z","direction":"out","text":"Merhaba! Sana nasıl yardımcı olabilirim?","latencyMs":2019,"model":"claude-sonnet-4-6","meta":{"proactive":false}}
+{"convId":"FRM-000004","ts":"2026-08-26T20:11:47.138Z","direction":"in","text":"Join win-student"}
+{"convId":"FRM-000004","ts":"2026-08-26T20:11:49.201Z","direction":"out","text":"Hey! Sounds like you might be looking for something specific.\n\nWhat's the main thing you're hoping to work on right now?","latencyMs":2088,"model":"claude-sonnet-4-6","meta":{"proactive":false}}
+{"convId":"FRM-000004","ts":"2026-08-26T20:21:51.847Z","direction":"in","text":"Join win-student"}
+{"convId":"FRM-000004","ts":"2026-08-26T20:21:54.326Z","direction":"out","text":"I hear you — can you tell me a bit more about what you're looking to change or improve?","latencyMs":2488,"model":"claude-sonnet-4-6","meta":{"proactive":false}}
+{"convId":"FRM-000003","ts":"2026-08-28T13:54:47.482Z","direction":"in","text":"kpi_refresh_test"}
+{"convId":"FRM-000003","ts":"2026-08-28T13:54:49.345Z","direction":"out","text":"Merhaba! Size nasıl yardımcı olabilirim?","latencyMs":1869,"model":"claude-sonnet-4-6","meta":{"proactive":false}}

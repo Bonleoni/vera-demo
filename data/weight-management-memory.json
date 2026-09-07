@@ -1,0 +1,56 @@
+{
+  "TEST-USER-EVENING_EATING": {
+    "userId": "TEST-USER-EVENING_EATING",
+    "facts": [
+      {
+        "id": "FAC-0000001",
+        "statement": "A business message was received for processing.",
+        "sourceSessionId": "TEST-WM-000001",
+        "sourceMessageId": "MSG-0000669",
+        "confidence": 0.99,
+        "status": "user-stated",
+        "createdAt": "2026-08-16T17:52:08.344Z",
+        "updatedAt": "2026-08-16T17:52:08.344Z"
+      }
+    ],
+    "goals": [],
+    "patterns": [],
+    "recentContext": {
+      "lastSessionId": "TEST-WM-000001",
+      "lastMessageAt": "2026-08-16T17:52:08.343Z",
+      "lastUserMessage": "Akşamları kendimi tutamıyorum.",
+      "summary": "Akşamları kendimi tutamıyorum.",
+      "updatedAt": "2026-08-16T17:52:08.344Z"
+    },
+    "updatedAt": "2026-08-16T17:52:08.344Z"
+  },
+  "TEST-USER-MINIMAL_DISCLOSURE": {
+    "userId": "TEST-USER-MINIMAL_DISCLOSURE",
+    "facts": [
+      {
+        "id": "FAC-0000001",
+        "statement": "A business message was received for processing.",
+        "sourceSessionId": "TEST-WM-000001",
+        "sourceMessageId": "MSG-0000673",
+        "confidence": 0.99,
+        "status": "user-stated",
+        "createdAt": "2026-08-16T17:52:18.415Z",
+        "updatedAt": "2026-08-16T17:52:18.415Z"
+      }
+    ],
+    "goals": [],
+    "patterns": [],
+    "recentContext": {
+      "lastSessionId": "TEST-WM-000001",
+      "lastMessageAt": "2026-08-16T17:52:18.408Z",
+      "lastUserMessage": "Genelde akşamları yiyorum.",
+      "summary": "Genelde akşamları yiyorum.",
+      "updatedAt": "2026-08-16T17:52:18.415Z"
+    },
+    "updatedAt": "2026-08-16T17:52:18.415Z"
+  }
+}17:52:18.415Z"
+  }
+}datedAt": "2026-08-16T17:52:18.414Z"
+  }
+}

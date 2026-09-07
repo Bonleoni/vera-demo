@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verify project validation",
+			"type": "shell",
+			"command": "npx eslint . --max-warnings=0; npx tsc --noEmit; npx next build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": "test"
+		}
+	]
+}

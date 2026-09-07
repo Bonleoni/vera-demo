@@ -1,0 +1,482 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --ink: #10233b;
+  --ink-soft: #405166;
+  --line: #d1d8e0;
+  --line-strong: #9babbc;
+  --accent: #1f4f82;
+  --accent-ink: #ffffff;
+  --ok: #0f766e;
+  --warn: #8a5d00;
+  --err: #b42318;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.app-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 20px 28px;
+}
+
+.app-header {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 16px 18px;
+}
+
+.brand {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.app-header h1 {
+  margin-top: 6px;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+.app-main {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 14px;
+}
+
+.panel h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  padding: 10px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.45;
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  padding: 10px;
+  font-size: 14px;
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+textarea:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+
+select:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+
+.button-row {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.secondary-button {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error-text {
+  margin-top: 10px;
+  color: var(--err);
+  font-size: 13px;
+}
+
+.pipeline-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pipeline-node-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pipeline-node {
+  min-width: 156px;
+  border: 1px solid var(--line);
+  padding: 8px;
+  background: var(--surface-muted);
+}
+
+.pipeline-title {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.pipeline-arrow {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.status {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid var(--line-strong);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.status.waiting {
+  color: var(--ink-soft);
+}
+
+.status.processing {
+  color: var(--warn);
+}
+
+.status.completed {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--err);
+}
+
+.tab-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+.tab.active {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.workspace-block {
+  border: 1px solid var(--line);
+  padding: 10px;
+  background: var(--surface-muted);
+}
+
+.workspace-block h3 {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.workspace-block p,
+.workspace-block li {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.workspace-block ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.subtle-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.id-row {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.id-row span {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 3px 6px;
+  font-family: var(--font-geist-mono), "Consolas", monospace;
+  font-size: 12px;
+}
+
+.meta {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.json-area pre {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+  padding: 10px;
+  overflow: auto;
+  max-height: 420px;
+  font-size: 12px;
+}
+
+.logs-area ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.logs-area li {
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 12px;
+}
+
+.wm-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.wm-analysis-column {
+  display: grid;
+  gap: 14px;
+}
+
+.wm-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.wm-session-title {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.wm-session-controls {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.wm-session-field {
+  display: grid;
+  gap: 6px;
+}
+
+.wm-debug-panel {
+  margin-top: 12px;
+  border: 1px dashed var(--line-strong);
+  background: #fffaf3;
+}
+
+.wm-debug-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.wm-debug-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.wm-debug-label {
+  min-width: 120px;
+  color: var(--ink-soft);
+}
+
+.wm-debug-insight {
+  align-items: flex-start;
+}
+
+.wm-debug-insight strong {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.wm-chat-thread {
+  margin: 16px 0;
+  min-height: 360px;
+  max-height: 560px;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at top left, rgba(31, 79, 130, 0.08), transparent 32%),
+    linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.chat-empty-state {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chat-message {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  text-align: left;
+}
+
+.chat-message:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.chat-message.is-selected .chat-bubble {
+  box-shadow: 0 0 0 2px rgba(31, 79, 130, 0.22);
+}
+
+.chat-message:has(.chat-bubble.user) {
+  justify-items: end;
+}
+
+.chat-role,
+.chat-time {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.chat-bubble {
+  max-width: min(80%, 560px);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.chat-bubble.user {
+  background: #d9f7d8;
+  border-color: #9fd09d;
+}
+
+.chat-bubble.assistant {
+  background: var(--surface);
+  border-color: #bfd0e2;
+}
+
+.loading-message {
+  justify-items: start;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .pipeline-node {
+    min-width: 132px;
+  }
+
+  .wm-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .wm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wm-chat-thread {
+    min-height: 280px;
+  }
+
+  .chat-bubble {
+    max-width: 92%;
+  }
+}
