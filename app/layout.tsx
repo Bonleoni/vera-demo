@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FORUM | AI Operations",
-  description: "FORUM AI Operations Engine foundation playground",
+  description: "AI Stress Lab ve Operations Paneli",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
