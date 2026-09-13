@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { CLAUDE_MASTER_PROMPT } from "@/lib/ai/claude-master-prompt";
 import { OPENAI_SIMULATOR_PROMPT } from "@/lib/ai/openai-simulator-prompt";
 
@@ -1704,6 +1705,46 @@ export function AiStressLab() {
                   </div>
                 </div>
               ))}
+
+              <div style={{ display: "grid", gap: isSidebarCollapsed ? 6 : 8, paddingTop: 8, paddingLeft: isSidebarCollapsed ? 0 : 12, paddingRight: isSidebarCollapsed ? 0 : 12, borderTop: "1px solid #1e2f47" }}>
+                {!isSidebarCollapsed && (
+                  <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a94a6", fontWeight: 700, padding: "0 6px" }}>
+                    LEAD YÖNETİMİ
+                  </div>
+                )}
+                <div style={{ display: "grid", gap: 6 }}>
+                  <Link
+                    href="/leads"
+                    title="Lead Yönetimi"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: isSidebarCollapsed ? "center" : "flex-start",
+                      gap: 10,
+                      textAlign: "left",
+                      padding: isSidebarCollapsed ? "9px 6px" : "10px 12px",
+                      border: "1px solid transparent",
+                      background: "transparent",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      borderRadius: 0,
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.background = "#16263d";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <span aria-hidden="true" style={{ display: "inline-flex", width: 18, height: 18, alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+                      📊
+                    </span>
+                    {!isSidebarCollapsed && <span>Lead Yönetimi</span>}
+                  </Link>
+                </div>
+              </div>
             </div>
           </aside>
 
