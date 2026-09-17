@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Check, Copy } from "lucide-react";
 
 type LeadRow = Record<string, unknown>;
@@ -24,13 +25,15 @@ interface EnrichedLeadResult {
 interface LeadTableProps {
   rows: LeadRow[];
   visibleColumns: string[];
-  availableColumns: Array<{ key: string; label: string; fillRate: number }>;
-  enrichedResults: Array<EnrichedLeadResult | null>;
-  copiedRowIndex: number | null;
-  onToggleColumn: (columnKey: string) => void;
-  onCopyMessage: (message: string, rowIndex: number) => void;
+  onToggleColumn: (key: string) => void;
+  isColumnMenuOpen: boolean;
+  onToggleColumnMenu: () => void;
+  availableColumns: { key: string; label: string; fillRate: number }[];
   handleSelectAllColumns: () => void;
   handleDeselectAllColumns: () => void;
+  enrichedResults: Array<EnrichedLeadResult | null>;
+  copiedRowIndex: number | null;
+  onCopyMessage: (message: string, rowIndex: number) => void;
 }
 
 const SEGMENT_BADGE_STYLE: Record<EnrichSegment, React.CSSProperties> = {
@@ -59,63 +62,98 @@ function SegmentBadge({ segment }: { segment: EnrichSegment }) {
 export function LeadTable({
   rows,
   visibleColumns,
-  availableColumns,
-  enrichedResults,
-  copiedRowIndex,
   onToggleColumn,
-  onCopyMessage,
+  isColumnMenuOpen,
+  onToggleColumnMenu,
+  availableColumns,
   handleSelectAllColumns,
   handleDeselectAllColumns,
+  enrichedResults,
+  copiedRowIndex,
+  onCopyMessage,
 }: LeadTableProps) {
+  React.useEffect(() => {
+    if (isColumnMenuOpen) {
+      console.log("MENÜ AÇIK - availableColumns:", availableColumns);
+    }
+  }, [isColumnMenuOpen, availableColumns]);
+
   return (
-    <>
-      <section className="panel">
-        <details open>
-          <summary style={{ cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#405166" }}>
-            Sütunları Yönet
-          </summary>
-          {availableColumns.length > 0 ? (
-            <>
+    <section className="panel">
+      <div style={{ position: "relative", width: "100%" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, position: "relative" }}>
+          <h2>Lead Tablosu ({rows.length} kayıt)</h2>
+
+          <button
+            type="button"
+            onClick={onToggleColumnMenu}
+            style={{
+              padding: "8px 12px",
+              background: "#f8fafc",
+              border: "1px solid #cbd5e1",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+          >
+            ⚙️ Sütunları Yönet
+          </button>
+
+          {isColumnMenuOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                zIndex: 9999,
+                width: 280,
+                background: "#ffffff",
+                border: "1px solid #d1d8e0",
+                borderRadius: 8,
+                boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                padding: 16,
+                marginTop: 8,
+              }}
+            >
               <div style={{ display: "flex", gap: 8, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #eee" }}>
                 <button
                   type="button"
                   onClick={handleSelectAllColumns}
-                  style={{ fontSize: 12, padding: "4px 8px", background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 4, cursor: "pointer" }}
+                  style={{ flex: 1, fontSize: 12, padding: "6px", background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
                 >
                   Tümünü Seç
                 </button>
                 <button
                   type="button"
                   onClick={handleDeselectAllColumns}
-                  style={{ fontSize: 12, padding: "4px 8px", background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 4, cursor: "pointer" }}
+                  style={{ flex: 1, fontSize: 12, padding: "6px", background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
                 >
                   Tümünü Kaldır
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {availableColumns.map((col) => (
-                  <label key={col.key} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns.includes(col.key)}
-                      onChange={() => onToggleColumn(col.key)}
-                    />
-                    <span style={{ fontSize: 13 }}>{col.label}</span>
-                  </label>
-                ))}
+              <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                {availableColumns.length === 0 ? (
+                  <p style={{ fontSize: 12, color: "#64748b" }}>Kolon verisi yükleniyor...</p>
+                ) : (
+                  availableColumns.map((col) => (
+                    <label key={col.key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns.includes(col.key)}
+                        onChange={() => onToggleColumn(col.key)}
+                        style={{ cursor: "pointer" }}
+                      />
+                      <span>{col.label} <span style={{ color: "#94a3b8", fontSize: 11 }}>(%{Math.round(col.fillRate)})</span></span>
+                    </label>
+                  ))
+                )}
               </div>
-            </>
-          ) : (
-            <p style={{ marginTop: 10, fontSize: 13, color: "#405166" }}>
-              Gösterilecek dolu sütun yok.
-            </p>
+            </div>
           )}
-        </details>
-      </section>
+        </div>
 
-      <section className="panel">
-        <h2>Yüklenen Veriler</h2>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
@@ -204,7 +242,7 @@ export function LeadTable({
             </tbody>
           </table>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }

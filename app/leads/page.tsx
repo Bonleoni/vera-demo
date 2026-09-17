@@ -168,8 +168,9 @@ function calculateAvailableColumns(leadsData: LeadRow[]): AvailableColumn[] {
 }
 
 export default function LeadsPage() {
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<LeadRow[]>([]);
+  const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -184,7 +185,7 @@ export default function LeadsPage() {
   useEffect(() => {
     console.log("availableColumns hesaplandı:", availableColumns);
     console.log("GERÇEK RENDER DOSYASI BURASI", { veriSayisi: rows?.length || 0, availableColumns });
-    setSelectedColumns(availableColumns.map((column) => column.key));
+    setVisibleColumns(availableColumns.map((column) => column.key));
   }, [availableColumns, rows?.length]);
 
   useEffect(() => {
@@ -245,7 +246,7 @@ export default function LeadsPage() {
         setParseError(
           error instanceof Error ? error.message : "Excel dosyası okunurken bir hata oluştu.",
         );
-        setSelectedColumns([]);
+        setVisibleColumns([]);
         setRows([]);
         setFileName(null);
         setEnrichedResults([]);
@@ -290,7 +291,7 @@ export default function LeadsPage() {
   };
 
   const handleColumnToggle = (columnKey: string) => {
-    setSelectedColumns((current) =>
+    setVisibleColumns((current) =>
       current.includes(columnKey)
         ? current.filter((key) => key !== columnKey)
         : [...current, columnKey],
@@ -301,12 +302,16 @@ export default function LeadsPage() {
     console.log("Tümünü Seç tıklandı");
     console.log("Tümünü Seç tıklandı, mevcut kolonlar:", availableColumns);
     console.log("Kolonlar:", availableColumns.map((column) => column.key));
-    setSelectedColumns(availableColumns.map((column) => column.key));
+    setVisibleColumns(availableColumns.map((column) => column.key));
   };
 
   const handleDeselectAllColumns = () => {
     console.log("Tümünü Kaldır tıklandı");
-    setSelectedColumns(["no", "liste", "ad"]);
+    setVisibleColumns(["no", "liste", "ad"]);
+  };
+
+  const onToggleColumnMenu = () => {
+    setIsColumnMenuOpen((current) => !current);
   };
 
   const handleEnrich = async () => {
@@ -443,7 +448,9 @@ export default function LeadsPage() {
 
         <LeadTable
           rows={rows}
-          visibleColumns={selectedColumns}
+          visibleColumns={visibleColumns}
+          isColumnMenuOpen={isColumnMenuOpen}
+          onToggleColumnMenu={onToggleColumnMenu}
           availableColumns={availableColumns}
           enrichedResults={enrichedResults}
           copiedRowIndex={copiedRowIndex}
