@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { UploadCloud, FileSpreadsheet, Sparkles, Copy, Check, Loader2 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 
-type LeadRow = Record<string, string | number | boolean | null>;
+type LeadRow = Record<string, unknown>;
+
+interface AvailableColumn {
+  key: string;
+  label: string;
+  fillRate: number;
+}
 
 type EnrichSegment = "A" | "B" | "C";
 
@@ -141,17 +147,97 @@ function SegmentBadge({ segment }: { segment: EnrichSegment }) {
   );
 }
 
+function isFilledValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
+
+function getColumnLabel(key: string): string {
+  return key
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase("tr-TR") + part.slice(1))
+    .join(" ");
+}
+
+function buildAvailableColumns(rows: LeadRow[]): AvailableColumn[] {
+  if (rows.length === 0) return [];
+
+  const keys = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+
+  return keys
+    .map((key) => {
+      const filledCount = rows.filter((row) => isFilledValue(row[key])).length;
+      const fillRate = (filledCount / rows.length) * 100;
+
+      return {
+        key,
+        label: getColumnLabel(key),
+        fillRate: Math.round(fillRate),
+        isAvailable: fillRate > 10,
+      };
+    })
+    .filter((column) => column.isAvailable)
+    .map(({ isAvailable, ...column }) => column);
+}
+
 export default function LeadsPage() {
-  const [columns, setColumns] = useState<string[]>([]);
+  const [availableColumns, setAvailableColumns] = useState<AvailableColumn[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [enrichedResults, setEnrichedResults] = useState<Array<EnrichedLeadResult | null>>([]);
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [copiedRowIndex, setCopiedRowIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchLeads() {
+      try {
+        const response = await fetch("/api/leads");
+        const payload = (await response.json()) as {
+          data?: LeadRow[];
+          availableColumns?: AvailableColumn[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Lead listesi alınamadı.");
+        }
+
+        if (!isMounted) return;
+
+        const nextRows = Array.isArray(payload.data) ? payload.data : [];
+        const nextAvailableColumns = Array.isArray(payload.availableColumns)
+          ? payload.availableColumns
+          : buildAvailableColumns(nextRows);
+        const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
+
+        setRows(nextRows);
+        setVisibleColumns(nextColumnKeys);
+        setAvailableColumns(nextAvailableColumns);
+        setLoadError(null);
+      } catch (error) {
+        if (!isMounted) return;
+        setLoadError(error instanceof Error ? error.message : "Lead listesi alınamadı.");
+      }
+    }
+
+    fetchLeads();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const parseWorkbookFile = useCallback((file: File) => {
     setParseError(null);
@@ -174,7 +260,11 @@ export default function LeadsPage() {
             ? Object.keys(json[0])
             : ((XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[] | undefined) ?? []);
 
-        setColumns(detectedColumns);
+        const nextAvailableColumns = buildAvailableColumns(json);
+        const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
+
+        setAvailableColumns(nextAvailableColumns);
+        setVisibleColumns(nextColumnKeys);
         setRows(json);
         setFileName(file.name);
         setEnrichedResults([]);
@@ -183,7 +273,8 @@ export default function LeadsPage() {
         setParseError(
           error instanceof Error ? error.message : "Excel dosyası okunurken bir hata oluştu.",
         );
-        setColumns([]);
+        setAvailableColumns([]);
+        setVisibleColumns([]);
         setRows([]);
         setFileName(null);
         setEnrichedResults([]);
@@ -225,6 +316,14 @@ export default function LeadsPage() {
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleColumnVisibilityChange = (columnKey: string) => {
+    setVisibleColumns((current) =>
+      current.includes(columnKey)
+        ? current.filter((key) => key !== columnKey)
+        : [...current, columnKey],
+    );
   };
 
   const handleEnrich = async () => {
@@ -356,6 +455,45 @@ export default function LeadsPage() {
           ) : null}
 
           {parseError ? <p className="error-text">{parseError}</p> : null}
+          {loadError ? <p className="error-text">{loadError}</p> : null}
+        </section>
+
+        <section className="panel">
+          <details open>
+            <summary style={{ cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#405166" }}>
+              Sütunları Yönet
+            </summary>
+            {availableColumns.length > 0 ? (
+              <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {availableColumns.map((column) => (
+                  <label
+                    key={column.key}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      border: "1px solid #d1d8e0",
+                      padding: "6px 8px",
+                      fontSize: 12,
+                      background: "#f8fafc",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={visibleColumns.includes(column.key)}
+                      onChange={() => handleColumnVisibilityChange(column.key)}
+                    />
+                    {column.label}
+                    <span style={{ color: "#405166" }}>%{column.fillRate}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p style={{ marginTop: 10, fontSize: 13, color: "#405166" }}>
+                Gösterilecek dolu sütun yok.
+              </p>
+            )}
+          </details>
         </section>
         <section className="panel">
           <h2>Yüklenen Veriler</h2>
@@ -363,10 +501,10 @@ export default function LeadsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr>
-                  {columns.length > 0 ? (
-                    columns.map((column) => (
+                  {visibleColumns.length > 0 ? (
+                    visibleColumns.map((column) => (
                       <th key={column} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>
-                        {column}
+                        {availableColumns.find((availableColumn) => availableColumn.key === column)?.label ?? column}
                       </th>
                     ))
                   ) : (
@@ -388,7 +526,7 @@ export default function LeadsPage() {
 
                     return (
                       <tr key={rowIndex}>
-                        {columns.map((column) => (
+                        {visibleColumns.map((column) => (
                           <td key={column} style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
                             {String(row[column] ?? "")}
                           </td>
