@@ -326,6 +326,14 @@ export default function LeadsPage() {
     );
   };
 
+  const handleSelectAllColumns = () => {
+    setVisibleColumns(availableColumns.map((column) => column.key));
+  };
+
+  const handleClearAllColumns = () => {
+    setVisibleColumns([]);
+  };
+
   const handleEnrich = async () => {
     if (rows.length === 0 || isEnriching) {
       return;
@@ -464,30 +472,40 @@ export default function LeadsPage() {
               Sütunları Yönet
             </summary>
             {availableColumns.length > 0 ? (
-              <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {availableColumns.map((column) => (
-                  <label
-                    key={column.key}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      border: "1px solid #d1d8e0",
-                      padding: "6px 8px",
-                      fontSize: 12,
-                      background: "#f8fafc",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns.includes(column.key)}
-                      onChange={() => handleColumnVisibilityChange(column.key)}
-                    />
-                    {column.label}
-                    <span style={{ color: "#405166" }}>%{column.fillRate}</span>
-                  </label>
-                ))}
-              </div>
+              <>
+                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                  <button type="button" className="secondary-button" onClick={handleSelectAllColumns}>
+                    Tümünü Seç
+                  </button>
+                  <button type="button" className="secondary-button" onClick={handleClearAllColumns}>
+                    Tümünü Kaldır
+                  </button>
+                </div>
+                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {availableColumns.map((column) => (
+                    <label
+                      key={column.key}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        border: "1px solid #d1d8e0",
+                        padding: "6px 8px",
+                        fontSize: 12,
+                        background: "#f8fafc",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns.includes(column.key)}
+                        onChange={() => handleColumnVisibilityChange(column.key)}
+                      />
+                      {column.label}
+                      <span style={{ color: "#405166" }}>%{column.fillRate}</span>
+                    </label>
+                  ))}
+                </div>
+              </>
             ) : (
               <p style={{ marginTop: 10, fontSize: 13, color: "#405166" }}>
                 Gösterilecek dolu sütun yok.
