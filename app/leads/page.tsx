@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadCloud, FileSpreadsheet, Sparkles, Copy, Check, Loader2 } from "lucide-react";
+import { UploadCloud, FileSpreadsheet, Sparkles, Loader2 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { LeadTable } from "./components/LeadTable";
 
 type LeadRow = Record<string, unknown>;
 
@@ -122,29 +123,6 @@ function mapRowToLeadPayload(row: LeadRow): LeadInsertPayload {
     customer_review: toStringOrNull(raw.customer_review),
     google_maps_url: toStringOrNull(raw.google_maps_url),
   };
-}
-
-const SEGMENT_BADGE_STYLE: Record<EnrichSegment, React.CSSProperties> = {
-  A: { background: "#dcfce7", color: "#15803d", border: "1px solid #86efac" },
-  B: { background: "#fef9c3", color: "#a16207", border: "1px solid #fde047" },
-  C: { background: "#e2e8f0", color: "#475569", border: "1px solid #cbd5e1" },
-};
-
-function SegmentBadge({ segment }: { segment: EnrichSegment }) {
-  return (
-    <span
-      style={{
-        ...SEGMENT_BADGE_STYLE[segment],
-        display: "inline-block",
-        padding: "2px 9px",
-        fontSize: 12,
-        fontWeight: 700,
-        borderRadius: 999,
-      }}
-    >
-      {segment}
-    </span>
-  );
 }
 
 function isFilledValue(value: unknown): boolean {
@@ -319,23 +297,16 @@ export default function LeadsPage() {
     );
   };
 
-  const handleColumnMenuToggle = (event: React.ToggleEvent<HTMLDetailsElement>) => {
-    if (!event.currentTarget.open) return;
-
-    console.log("availableColumns:", availableColumns);
-    console.log("selectedColumns:", selectedColumns);
-  };
-
-  const handleSelectAll = () => {
+  const handleSelectAllColumns = () => {
     console.log("Tümünü Seç tıklandı");
     console.log("Tümünü Seç tıklandı, mevcut kolonlar:", availableColumns);
     console.log("Kolonlar:", availableColumns.map((column) => column.key));
     setSelectedColumns(availableColumns.map((column) => column.key));
   };
 
-  const handleDeselectAll = () => {
+  const handleDeselectAllColumns = () => {
     console.log("Tümünü Kaldır tıklandı");
-    setSelectedColumns(["no", "liste"]);
+    setSelectedColumns(["no", "liste", "ad"]);
   };
 
   const handleEnrich = async () => {
@@ -470,145 +441,17 @@ export default function LeadsPage() {
           {loadError ? <p className="error-text">{loadError}</p> : null}
         </section>
 
-        <section className="panel">
-          <details open onToggle={handleColumnMenuToggle}>
-            <summary style={{ cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#405166" }}>
-              Sütunları Yönet
-            </summary>
-            {availableColumns.length > 0 ? (
-              <>
-                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                  <button type="button" className="secondary-button" onClick={handleSelectAll}>
-                    Tümünü Seç
-                  </button>
-                  <button type="button" className="secondary-button" onClick={handleDeselectAll}>
-                    Tümünü Kaldır
-                  </button>
-                </div>
-                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {availableColumns.map((col) => (
-                    <label
-                      key={col.key}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        border: "1px solid #d1d8e0",
-                        padding: "6px 8px",
-                        fontSize: 12,
-                        background: "#f8fafc",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        value={col.key}
-                        checked={selectedColumns.includes(col.key)}
-                        onChange={(e) => handleColumnToggle(e.currentTarget.value)}
-                      />
-                      {col.label}
-                      <span style={{ color: "#405166" }}>%{Math.round(col.fillRate)}</span>
-                    </label>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p style={{ marginTop: 10, fontSize: 13, color: "#405166" }}>
-                Gösterilecek dolu sütun yok.
-              </p>
-            )}
-          </details>
-        </section>
-        <section className="panel">
-          <h2>Yüklenen Veriler</h2>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr>
-                  {selectedColumns.length > 0 ? (
-                    selectedColumns.map((column) => (
-                      <th key={column} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>
-                        {availableColumns.find((availableColumn) => availableColumn.key === column)?.label ?? column}
-                      </th>
-                    ))
-                  ) : (
-                    <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Sütun</th>
-                  )}
-                  {enrichedResults.length > 0 ? (
-                    <>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Segment</th>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Skor</th>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Önerilen Mesaj</th>
-                    </>
-                  ) : null}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length > 0 ? (
-                  rows.map((row, rowIndex) => {
-                    const enriched = enrichedResults[rowIndex] ?? null;
-
-                    return (
-                      <tr key={rowIndex}>
-                        {selectedColumns.map((column) => (
-                          <td key={column} style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                            {String(row[column] ?? "")}
-                          </td>
-                        ))}
-                        {enrichedResults.length > 0 ? (
-                          <>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                              {enriched ? <SegmentBadge segment={enriched.segment} /> : "—"}
-                            </td>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                              {enriched ? enriched.priority_score : "—"}
-                            </td>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4", maxWidth: 360 }}>
-                              {enriched ? (
-                                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                                  <span style={{ fontSize: 13 }}>
-                                    {enriched.suggested_message || "Mesaj üretilemedi."}
-                                  </span>
-                                  {enriched.suggested_message ? (
-                                    <button
-                                      type="button"
-                                      className="secondary-button"
-                                      style={{ padding: "4px 6px", flexShrink: 0 }}
-                                      onClick={() => handleCopyMessage(enriched.suggested_message, rowIndex)}
-                                      aria-label="Mesajı kopyala"
-                                    >
-                                      {copiedRowIndex === rowIndex ? (
-                                        <Check size={14} color="#0f766e" />
-                                      ) : (
-                                        <Copy size={14} />
-                                      )}
-                                    </button>
-                                  ) : null}
-                                </div>
-                              ) : (
-                                "—"
-                              )}
-                              {copiedRowIndex === rowIndex ? (
-                                <div style={{ marginTop: 4, fontSize: 11, fontWeight: 700, color: "#0f766e" }}>
-                                  Kopyalandı!
-                                </div>
-                              ) : null}
-                            </td>
-                          </>
-                        ) : null}
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td style={{ padding: 24, textAlign: "center", color: "#405166" }}>
-                      Görüntülenecek veri yok.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <LeadTable
+          rows={rows}
+          visibleColumns={selectedColumns}
+          availableColumns={availableColumns}
+          enrichedResults={enrichedResults}
+          copiedRowIndex={copiedRowIndex}
+          onToggleColumn={handleColumnToggle}
+          onCopyMessage={handleCopyMessage}
+          handleSelectAllColumns={handleSelectAllColumns}
+          handleDeselectAllColumns={handleDeselectAllColumns}
+        />
         {enrichError ? <p className="error-text">{enrichError}</p> : null}
 
         <div className="button-row" style={{ justifyContent: "flex-end" }}>
