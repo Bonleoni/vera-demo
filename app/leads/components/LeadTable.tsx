@@ -86,7 +86,11 @@ export function LeadTable({
 
           <button
             type="button"
-            onClick={onToggleColumnMenu}
+            onClick={() => {
+              console.log("BUTON TIKLANDI - Önceki state:", isColumnMenuOpen);
+              onToggleColumnMenu();
+              console.log("Tıklandıktan sonra menü açılmalı");
+            }}
             style={{
               padding: "8px 12px",
               background: "#f8fafc",
@@ -101,56 +105,59 @@ export function LeadTable({
           </button>
 
           {isColumnMenuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                right: 0,
-                zIndex: 9999,
-                width: 280,
-                background: "#ffffff",
-                border: "1px solid #d1d8e0",
-                borderRadius: 8,
-                boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-                padding: 16,
-                marginTop: 8,
-              }}
-            >
-              <div style={{ display: "flex", gap: 8, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #eee" }}>
-                <button
-                  type="button"
-                  onClick={handleSelectAllColumns}
-                  style={{ flex: 1, fontSize: 12, padding: "6px", background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
-                >
-                  Tümünü Seç
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeselectAllColumns}
-                  style={{ flex: 1, fontSize: 12, padding: "6px", background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
-                >
-                  Tümünü Kaldır
-                </button>
-              </div>
+            <>
+              {console.log("MENÜ RENDER EDİLİYOR - availableColumns:", availableColumns?.length)}
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  zIndex: 9999,
+                  width: 280,
+                  background: "#ffffff",
+                  border: "1px solid #d1d8e0",
+                  borderRadius: 8,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                  padding: 16,
+                  marginTop: 8,
+                }}
+              >
+                <div style={{ display: "flex", gap: 8, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #eee" }}>
+                  <button
+                    type="button"
+                    onClick={handleSelectAllColumns}
+                    style={{ flex: 1, fontSize: 12, padding: "6px", background: "#e0f2fe", border: "1px solid #bae6fd", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
+                  >
+                    Tümünü Seç
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeselectAllColumns}
+                    style={{ flex: 1, fontSize: 12, padding: "6px", background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
+                  >
+                    Tümünü Kaldır
+                  </button>
+                </div>
 
-              <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
-                {availableColumns.length === 0 ? (
-                  <p style={{ fontSize: 12, color: "#64748b" }}>Kolon verisi yükleniyor...</p>
-                ) : (
-                  availableColumns.map((col) => (
-                    <label key={col.key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns.includes(col.key)}
-                        onChange={() => onToggleColumn(col.key)}
-                        style={{ cursor: "pointer" }}
-                      />
-                      <span>{col.label} <span style={{ color: "#94a3b8", fontSize: 11 }}>(%{Math.round(col.fillRate)})</span></span>
-                    </label>
-                  ))
-                )}
+                <div style={{ maxHeight: 300, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                  {availableColumns.length === 0 ? (
+                    <p style={{ fontSize: 12, color: "#64748b" }}>Kolon verisi yükleniyor...</p>
+                  ) : (
+                    availableColumns.map((col) => (
+                      <label key={col.key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns.includes(col.key)}
+                          onChange={() => onToggleColumn(col.key)}
+                          style={{ cursor: "pointer" }}
+                        />
+                        <span>{col.label} <span style={{ color: "#94a3b8", fontSize: 11 }}>(%{Math.round(col.fillRate)})</span></span>
+                      </label>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
 
