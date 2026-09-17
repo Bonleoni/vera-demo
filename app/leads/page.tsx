@@ -177,16 +177,13 @@ function buildAvailableColumns(rows: LeadRow[]): AvailableColumn[] {
         key,
         label: getColumnLabel(key),
         fillRate: Math.round(fillRate),
-        isAvailable: fillRate > 10,
       };
-    })
-    .filter((column) => column.isAvailable)
-    .map(({ isAvailable, ...column }) => column);
+    });
 }
 
 export default function LeadsPage() {
   const [availableColumns, setAvailableColumns] = useState<AvailableColumn[]>([]);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -223,7 +220,7 @@ export default function LeadsPage() {
         const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
 
         setRows(nextRows);
-        setVisibleColumns(nextColumnKeys);
+        setSelectedColumns(nextColumnKeys);
         setAvailableColumns(nextAvailableColumns);
         setLoadError(null);
       } catch (error) {
@@ -264,7 +261,7 @@ export default function LeadsPage() {
         const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
 
         setAvailableColumns(nextAvailableColumns);
-        setVisibleColumns(nextColumnKeys);
+        setSelectedColumns(nextColumnKeys);
         setRows(json);
         setFileName(file.name);
         setEnrichedResults([]);
@@ -274,7 +271,7 @@ export default function LeadsPage() {
           error instanceof Error ? error.message : "Excel dosyası okunurken bir hata oluştu.",
         );
         setAvailableColumns([]);
-        setVisibleColumns([]);
+        setSelectedColumns([]);
         setRows([]);
         setFileName(null);
         setEnrichedResults([]);
@@ -319,19 +316,29 @@ export default function LeadsPage() {
   };
 
   const handleColumnVisibilityChange = (columnKey: string) => {
-    setVisibleColumns((current) =>
+    setSelectedColumns((current) =>
       current.includes(columnKey)
         ? current.filter((key) => key !== columnKey)
         : [...current, columnKey],
     );
   };
 
-  const handleSelectAllColumns = () => {
-    setVisibleColumns(availableColumns.map((column) => column.key));
+  const handleColumnMenuToggle = (event: React.ToggleEvent<HTMLDetailsElement>) => {
+    if (!event.currentTarget.open) return;
+
+    console.log("availableColumns:", availableColumns);
+    console.log("selectedColumns:", selectedColumns);
   };
 
-  const handleClearAllColumns = () => {
-    setVisibleColumns([]);
+  const handleSelectAll = () => {
+    console.log("Tümünü Seç tıklandı");
+    console.log("Kolonlar:", availableColumns.map((column) => column.key));
+    setSelectedColumns(availableColumns.map((column) => column.key));
+  };
+
+  const handleDeselectAll = () => {
+    console.log("Tümünü Kaldır tıklandı");
+    setSelectedColumns(["no", "liste"]);
   };
 
   const handleEnrich = async () => {
@@ -467,17 +474,17 @@ export default function LeadsPage() {
         </section>
 
         <section className="panel">
-          <details open>
+          <details open onToggle={handleColumnMenuToggle}>
             <summary style={{ cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#405166" }}>
               Sütunları Yönet
             </summary>
             {availableColumns.length > 0 ? (
               <>
                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                  <button type="button" className="secondary-button" onClick={handleSelectAllColumns}>
+                  <button type="button" className="secondary-button" onClick={handleSelectAll}>
                     Tümünü Seç
                   </button>
-                  <button type="button" className="secondary-button" onClick={handleClearAllColumns}>
+                  <button type="button" className="secondary-button" onClick={handleDeselectAll}>
                     Tümünü Kaldır
                   </button>
                 </div>
@@ -497,7 +504,7 @@ export default function LeadsPage() {
                     >
                       <input
                         type="checkbox"
-                        checked={visibleColumns.includes(column.key)}
+                        checked={selectedColumns.includes(column.key)}
                         onChange={() => handleColumnVisibilityChange(column.key)}
                       />
                       {column.label}
@@ -519,8 +526,8 @@ export default function LeadsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr>
-                  {visibleColumns.length > 0 ? (
-                    visibleColumns.map((column) => (
+                  {selectedColumns.length > 0 ? (
+                    selectedColumns.map((column) => (
                       <th key={column} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>
                         {availableColumns.find((availableColumn) => availableColumn.key === column)?.label ?? column}
                       </th>
@@ -544,7 +551,7 @@ export default function LeadsPage() {
 
                     return (
                       <tr key={rowIndex}>
-                        {visibleColumns.map((column) => (
+                        {selectedColumns.map((column) => (
                           <td key={column} style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
                             {String(row[column] ?? "")}
                           </td>

@@ -61,11 +61,8 @@ function getAvailableColumns(rows: LeadRecord[]): AvailableColumn[] {
         key,
         label: getColumnLabel(key),
         fillRate: Math.round(fillRate),
-        isAvailable: fillRate > 10,
       };
-    })
-    .filter((column) => column.isAvailable)
-    .map(({ isAvailable, ...column }) => column);
+    });
 }
 
 export async function GET() {
