@@ -14,6 +14,8 @@ export interface DietitianLead {
   instagram: string | null;
   customer_review: string | null;
   google_maps_url: string | null;
+  photo_url: string | null;
+  photos: unknown;
 }
 
 function asString(value: unknown): string | null {
@@ -28,7 +30,28 @@ function asNumber(value: unknown): number | null {
   return Number.isFinite(num) ? num : null;
 }
 
+function parseJsonMaybe(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+
+  const text = value.trim();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return value;
+  }
+}
+
+function asHttpsUrl(value: unknown): string | null {
+  const text = asString(value);
+  if (!text || !text.startsWith("https://")) return null;
+  return text;
+}
+
 export function normalizeDietitianLead(row: Record<string, unknown>, fallbackId: string): DietitianLead {
+  const photos = parseJsonMaybe(row.photos);
+
   return {
     id: asString(row.id) ?? fallbackId,
     name: asString(row.name),
@@ -45,6 +68,8 @@ export function normalizeDietitianLead(row: Record<string, unknown>, fallbackId:
     instagram: asString(row.instagram),
     customer_review: asString(row.customer_review),
     google_maps_url: asString(row.google_maps_url),
+    photo_url: asHttpsUrl(row.photo_url) ?? asHttpsUrl(row.photoUrl) ?? extractDietitianPhotoUrl(photos),
+    photos,
   };
 }
 
@@ -76,6 +101,40 @@ export function getGoogleMapsSearchUrl(lead: DietitianLead): string {
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
+export function extractDietitianPhotoUrl(photos: unknown): string | null {
+  const directUrl = asHttpsUrl(photos);
+  if (directUrl) return directUrl;
+
+  if (Array.isArray(photos)) {
+    for (const photo of photos) {
+      const url = extractDietitianPhotoUrl(photo);
+      if (url) return url;
+    }
+    return null;
+  }
+
+  if (typeof photos !== "object" || photos === null) {
+    return null;
+  }
+
+  const photo = photos as Record<string, unknown>;
+  const preferredUrl =
+    asHttpsUrl(photo.url) ??
+    asHttpsUrl(photo.imageUrl) ??
+    asHttpsUrl(photo.photoUrl) ??
+    asHttpsUrl(photo.src) ??
+    asHttpsUrl(photo.original);
+
+  if (preferredUrl) return preferredUrl;
+
+  for (const value of Object.values(photo)) {
+    const url = extractDietitianPhotoUrl(value);
+    if (url) return url;
+  }
+
+  return null;
+}
+
 export const DEMO_DIETITIAN_LEAD: DietitianLead = {
   id: "demo",
   name: "Ayşe Yılmaz",
@@ -92,4 +151,6 @@ export const DEMO_DIETITIAN_LEAD: DietitianLead = {
   instagram: "https://instagram.com/example",
   customer_review: "Çok ilgili ve açıklayıcı bir diyet programı hazırladı. Randevu süreci de çok düzenliydi.",
   google_maps_url: "https://maps.google.com/?q=Kadikoy+Istanbul",
+  photo_url: null,
+  photos: null,
 };

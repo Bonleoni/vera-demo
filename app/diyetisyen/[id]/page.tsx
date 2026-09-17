@@ -10,6 +10,7 @@ import {
   normalizeDietitianLead,
   type DietitianLead,
 } from "@/lib/dietitian";
+import { ProfilePhoto } from "./profile-photo";
 
 export const dynamic = "force-dynamic";
 
@@ -58,35 +59,39 @@ export default async function DietitianPage({ params }: { params: Promise<{ id: 
   const displayName = lead.name || "Diyetisyen";
   const mapEmbedUrl = getGoogleMapsEmbedUrl(lead);
   const mapSearchUrl = getGoogleMapsSearchUrl(lead);
+  const profilePhotoUrl = lead.photo_url?.startsWith("https://") ? lead.photo_url : null;
 
   return (
     <div className="min-h-full bg-slate-50">
       <section className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 px-6 py-16 text-white md:px-10 md:py-20">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-2 text-4xl font-bold tracking-tight md:text-5xl">{displayName}</h1>
-          <p className="mb-4 text-lg text-emerald-50 md:text-xl">{title}</p>
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 md:flex-row md:items-center">
+          <ProfilePhoto name={displayName} photoUrl={profilePhotoUrl} />
+          <div>
+            <h1 className="mb-2 text-4xl font-bold tracking-tight md:text-5xl">{displayName}</h1>
+            <p className="mb-4 text-lg text-emerald-50 md:text-xl">{title}</p>
 
-          {lead.address ? (
-            <p
-              className="mb-5 inline-flex max-w-2xl items-start gap-2 rounded-xl bg-white/20 px-4 py-3 text-base font-medium text-white shadow-sm backdrop-blur-sm md:text-lg"
-              data-testid="hero-address"
-            >
-              <MapPin className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-              <span>{lead.address}</span>
+            {lead.address ? (
+              <p
+                className="mb-5 inline-flex max-w-2xl items-start gap-2 rounded-xl bg-white/20 px-4 py-3 text-base font-medium text-white shadow-sm backdrop-blur-sm md:text-lg"
+                data-testid="hero-address"
+              >
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                <span>{lead.address}</span>
+              </p>
+            ) : null}
+
+            <p className="mb-6 max-w-2xl text-lg text-white/90 md:text-xl">
+              {locationLabel} •{" "}
+              {lead.rating ? (
+                <span className="inline-flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-300 text-yellow-300" aria-hidden />
+                  {lead.rating} ({lead.review_count || 0} yorum)
+                </span>
+              ) : (
+                "Profesyonel hizmet"
+              )}
             </p>
-          ) : null}
-
-          <p className="mb-6 max-w-2xl text-lg text-white/90 md:text-xl">
-            {locationLabel} •{" "}
-            {lead.rating ? (
-              <span className="inline-flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-300 text-yellow-300" aria-hidden />
-                {lead.rating} ({lead.review_count || 0} yorum)
-              </span>
-            ) : (
-              "Profesyonel hizmet"
-            )}
-          </p>
+          </div>
         </div>
       </section>
 
