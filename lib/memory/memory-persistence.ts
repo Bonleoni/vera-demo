@@ -11,7 +11,7 @@ import { parseStoreText, serializeStoreMap } from "./memory-serializer";
 import type { MemoryHealth, MemoryStoreOptions, UserWeightMemory } from "./memory-types";
 
 const DEFAULT_FILE_NAME = "weight-management-memory.json";
-const DEFAULT_PRODUCTION_PATH = path.resolve(process.cwd(), "data", DEFAULT_FILE_NAME);
+const DEFAULT_PRODUCTION_PATH = path.resolve(/* turbopackIgnore: true */ process.cwd(), "data", DEFAULT_FILE_NAME);
 const CURRENT_SUFFIX = ".current";
 const PREVIOUS_SUFFIX = ".previous";
 const LOCK_RETRY_MS = 25;
@@ -27,13 +27,13 @@ export class MemoryPersistenceAdapter {
   private queue: Promise<void> = Promise.resolve();
 
   constructor(options: MemoryStoreOptions = {}) {
-    const configuredDir = options.dataDir ?? process.env.MEMORY_DATA_DIR ?? path.resolve(process.cwd(), "data");
+    const configuredDir = options.dataDir ?? process.env.MEMORY_DATA_DIR ?? path.resolve(/* turbopackIgnore: true */ process.cwd(), "data");
     const fileName = options.fileName ?? DEFAULT_FILE_NAME;
-    this.dataDir = path.resolve(configuredDir);
-    this.filePath = path.resolve(this.dataDir, fileName);
-    this.backupPath = path.resolve(this.dataDir, `${path.basename(fileName)}${PREVIOUS_SUFFIX}`);
-    this.lockPath = path.resolve(this.dataDir, `${path.basename(fileName)}${CURRENT_SUFFIX}.lock`);
-    this.productionPath = path.resolve(options.productionPath ?? DEFAULT_PRODUCTION_PATH);
+    this.dataDir = path.resolve(/* turbopackIgnore: true */ configuredDir);
+    this.filePath = path.resolve(/* turbopackIgnore: true */ this.dataDir, fileName);
+    this.backupPath = path.resolve(/* turbopackIgnore: true */ this.dataDir, `${path.basename(fileName)}${PREVIOUS_SUFFIX}`);
+    this.lockPath = path.resolve(/* turbopackIgnore: true */ this.dataDir, `${path.basename(fileName)}${CURRENT_SUFFIX}.lock`);
+    this.productionPath = path.resolve(/* turbopackIgnore: true */ options.productionPath ?? DEFAULT_PRODUCTION_PATH);
     this.allowProduction = options.allowProduction ?? false;
 
     if (!this.allowProduction && this.filePath === this.productionPath) {

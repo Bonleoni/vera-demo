@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadCloud, FileSpreadsheet, Sparkles, Copy, Check, Loader2 } from "lucide-react";
+import { UploadCloud, FileSpreadsheet, Sparkles, Loader2 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { LeadTable } from "./components/LeadTable";
 
-type LeadRow = Record<string, string | number | boolean | null>;
+type LeadRow = Record<string, unknown>;
+
+interface AvailableColumn {
+  key: string;
+  label: string;
+  fillRate: number;
+}
 
 type EnrichSegment = "A" | "B" | "C";
 
@@ -118,40 +125,102 @@ function mapRowToLeadPayload(row: LeadRow): LeadInsertPayload {
   };
 }
 
-const SEGMENT_BADGE_STYLE: Record<EnrichSegment, React.CSSProperties> = {
-  A: { background: "#dcfce7", color: "#15803d", border: "1px solid #86efac" },
-  B: { background: "#fef9c3", color: "#a16207", border: "1px solid #fde047" },
-  C: { background: "#e2e8f0", color: "#475569", border: "1px solid #cbd5e1" },
-};
+function isFilledValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
 
-function SegmentBadge({ segment }: { segment: EnrichSegment }) {
-  return (
-    <span
-      style={{
-        ...SEGMENT_BADGE_STYLE[segment],
-        display: "inline-block",
-        padding: "2px 9px",
-        fontSize: 12,
-        fontWeight: 700,
-        borderRadius: 999,
-      }}
-    >
-      {segment}
-    </span>
-  );
+function calculateAvailableColumns(leadsData: LeadRow[]): AvailableColumn[] {
+  if (!leadsData || leadsData.length === 0) return [];
+
+  const labels: Record<string, string> = {
+    lead_number: "Lead No",
+    name: "Ad Soyad",
+    phone: "Telefon",
+    city: "Şehir",
+    district: "İlçe",
+    rating: "Puan",
+    review_count: "Yorum Sayısı",
+    instagram_url: "Instagram",
+    instagram: "Instagram",
+    address: "Adres",
+  };
+
+  const allKeys = Object.keys(leadsData[0]);
+  const total = leadsData.length;
+
+  return allKeys
+    .map((key) => {
+      const filledCount = leadsData.filter((lead) => isFilledValue(lead[key])).length;
+      const fillRate = (filledCount / total) * 100;
+
+      return {
+        key,
+        label: labels[key] || key.charAt(0).toLocaleUpperCase("tr-TR") + key.slice(1),
+        fillRate,
+      };
+    })
+    .filter((column) => column.fillRate >= 10)
+    .sort((a, b) => b.fillRate - a.fillRate);
 }
 
 export default function LeadsPage() {
-  const [columns, setColumns] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<LeadRow[]>([]);
+  const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [enrichedResults, setEnrichedResults] = useState<Array<EnrichedLeadResult | null>>([]);
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [copiedRowIndex, setCopiedRowIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const availableColumns = useMemo(() => calculateAvailableColumns(rows), [rows]);
+
+  useEffect(() => {
+    console.log("availableColumns hesaplandı:", availableColumns);
+    console.log("GERÇEK RENDER DOSYASI BURASI", { veriSayisi: rows?.length || 0, availableColumns });
+    setVisibleColumns(availableColumns.map((column) => column.key));
+  }, [availableColumns, rows?.length]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchLeads() {
+      try {
+        const response = await fetch("/api/leads");
+        const payload = (await response.json()) as {
+          data?: LeadRow[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Lead listesi alınamadı.");
+        }
+
+        if (!isMounted) return;
+
+        const nextRows = Array.isArray(payload.data) ? payload.data : [];
+
+        setRows(nextRows);
+        setLoadError(null);
+      } catch (error) {
+        if (!isMounted) return;
+        setLoadError(error instanceof Error ? error.message : "Lead listesi alınamadı.");
+      }
+    }
+
+    fetchLeads();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const parseWorkbookFile = useCallback((file: File) => {
     setParseError(null);
@@ -169,12 +238,6 @@ export default function LeadsPage() {
         const worksheet = workbook.Sheets[firstSheetName];
         const json = XLSX.utils.sheet_to_json<LeadRow>(worksheet, { defval: "" });
 
-        const detectedColumns =
-          json.length > 0
-            ? Object.keys(json[0])
-            : ((XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[] | undefined) ?? []);
-
-        setColumns(detectedColumns);
         setRows(json);
         setFileName(file.name);
         setEnrichedResults([]);
@@ -183,7 +246,7 @@ export default function LeadsPage() {
         setParseError(
           error instanceof Error ? error.message : "Excel dosyası okunurken bir hata oluştu.",
         );
-        setColumns([]);
+        setVisibleColumns([]);
         setRows([]);
         setFileName(null);
         setEnrichedResults([]);
@@ -225,6 +288,30 @@ export default function LeadsPage() {
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleColumnToggle = (columnKey: string) => {
+    setVisibleColumns((current) =>
+      current.includes(columnKey)
+        ? current.filter((key) => key !== columnKey)
+        : [...current, columnKey],
+    );
+  };
+
+  const handleSelectAllColumns = () => {
+    console.log("Tümünü Seç tıklandı");
+    console.log("Tümünü Seç tıklandı, mevcut kolonlar:", availableColumns);
+    console.log("Kolonlar:", availableColumns.map((column) => column.key));
+    setVisibleColumns(availableColumns.map((column) => column.key));
+  };
+
+  const handleDeselectAllColumns = () => {
+    console.log("Tümünü Kaldır tıklandı");
+    setVisibleColumns(["no", "liste", "ad"]);
+  };
+
+  const onToggleColumnMenu = () => {
+    setIsColumnMenuOpen((current) => !current);
   };
 
   const handleEnrich = async () => {
@@ -356,98 +443,22 @@ export default function LeadsPage() {
           ) : null}
 
           {parseError ? <p className="error-text">{parseError}</p> : null}
+          {loadError ? <p className="error-text">{loadError}</p> : null}
         </section>
-        <section className="panel">
-          <h2>Yüklenen Veriler</h2>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr>
-                  {columns.length > 0 ? (
-                    columns.map((column) => (
-                      <th key={column} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>
-                        {column}
-                      </th>
-                    ))
-                  ) : (
-                    <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Sütun</th>
-                  )}
-                  {enrichedResults.length > 0 ? (
-                    <>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Segment</th>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Skor</th>
-                      <th style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #d1d8e0" }}>Önerilen Mesaj</th>
-                    </>
-                  ) : null}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length > 0 ? (
-                  rows.map((row, rowIndex) => {
-                    const enriched = enrichedResults[rowIndex] ?? null;
 
-                    return (
-                      <tr key={rowIndex}>
-                        {columns.map((column) => (
-                          <td key={column} style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                            {String(row[column] ?? "")}
-                          </td>
-                        ))}
-                        {enrichedResults.length > 0 ? (
-                          <>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                              {enriched ? <SegmentBadge segment={enriched.segment} /> : "—"}
-                            </td>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4" }}>
-                              {enriched ? enriched.priority_score : "—"}
-                            </td>
-                            <td style={{ padding: 8, borderBottom: "1px solid #eef1f4", maxWidth: 360 }}>
-                              {enriched ? (
-                                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                                  <span style={{ fontSize: 13 }}>
-                                    {enriched.suggested_message || "Mesaj üretilemedi."}
-                                  </span>
-                                  {enriched.suggested_message ? (
-                                    <button
-                                      type="button"
-                                      className="secondary-button"
-                                      style={{ padding: "4px 6px", flexShrink: 0 }}
-                                      onClick={() => handleCopyMessage(enriched.suggested_message, rowIndex)}
-                                      aria-label="Mesajı kopyala"
-                                    >
-                                      {copiedRowIndex === rowIndex ? (
-                                        <Check size={14} color="#0f766e" />
-                                      ) : (
-                                        <Copy size={14} />
-                                      )}
-                                    </button>
-                                  ) : null}
-                                </div>
-                              ) : (
-                                "—"
-                              )}
-                              {copiedRowIndex === rowIndex ? (
-                                <div style={{ marginTop: 4, fontSize: 11, fontWeight: 700, color: "#0f766e" }}>
-                                  Kopyalandı!
-                                </div>
-                              ) : null}
-                            </td>
-                          </>
-                        ) : null}
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td style={{ padding: 24, textAlign: "center", color: "#405166" }}>
-                      Görüntülenecek veri yok.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <LeadTable
+          rows={rows}
+          visibleColumns={visibleColumns}
+          isColumnMenuOpen={isColumnMenuOpen}
+          onToggleColumnMenu={onToggleColumnMenu}
+          availableColumns={availableColumns}
+          enrichedResults={enrichedResults}
+          copiedRowIndex={copiedRowIndex}
+          onToggleColumn={handleColumnToggle}
+          onCopyMessage={handleCopyMessage}
+          handleSelectAllColumns={handleSelectAllColumns}
+          handleDeselectAllColumns={handleDeselectAllColumns}
+        />
         {enrichError ? <p className="error-text">{enrichError}</p> : null}
 
         <div className="button-row" style={{ justifyContent: "flex-end" }}>
