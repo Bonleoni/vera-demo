@@ -205,8 +205,9 @@ export default function LeadsPage() {
 
   useEffect(() => {
     console.log("availableColumns hesaplandı:", availableColumns);
+    console.log("GERÇEK RENDER DOSYASI BURASI", { veriSayisi: rows?.length || 0, availableColumns });
     setSelectedColumns(availableColumns.map((column) => column.key));
-  }, [availableColumns]);
+  }, [availableColumns, rows?.length]);
 
   useEffect(() => {
     let isMounted = true;
@@ -327,6 +328,7 @@ export default function LeadsPage() {
 
   const handleSelectAll = () => {
     console.log("Tümünü Seç tıklandı");
+    console.log("Tümünü Seç tıklandı, mevcut kolonlar:", availableColumns);
     console.log("Kolonlar:", availableColumns.map((column) => column.key));
     setSelectedColumns(availableColumns.map((column) => column.key));
   };
