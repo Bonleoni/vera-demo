@@ -59,6 +59,23 @@ export function getDietitianLocationLabel(lead: DietitianLead): string {
   return `${location}, İstanbul`;
 }
 
+export function getDietitianMapQuery(lead: DietitianLead): string {
+  const parts = [lead.address, lead.name, getDietitianLocationLabel(lead)]
+    .filter((part): part is string => Boolean(part));
+
+  return parts.join(" ");
+}
+
+export function getGoogleMapsEmbedUrl(lead: DietitianLead): string {
+  const query = encodeURIComponent(getDietitianMapQuery(lead));
+  return `https://www.google.com/maps?q=${query}&output=embed`;
+}
+
+export function getGoogleMapsSearchUrl(lead: DietitianLead): string {
+  const query = encodeURIComponent(getDietitianMapQuery(lead));
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
 export const DEMO_DIETITIAN_LEAD: DietitianLead = {
   id: "demo",
   name: "Ayşe Yılmaz",

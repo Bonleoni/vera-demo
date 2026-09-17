@@ -9,7 +9,7 @@
     "lint": "eslint",
     "clean-csv": "node scraper/clean-csv.js",
     "test:clean-csv": "node --test scraper/clean-csv.test.js",
-    "test:dietitian": "node --test lib/dietitian-hero.test.js && node --experimental-strip-types --test lib/dietitian.test.ts"
+    "test:dietitian": "node --test lib/dietitian-hero.test.js && node --experimental-strip-types --test lib/dietitian.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

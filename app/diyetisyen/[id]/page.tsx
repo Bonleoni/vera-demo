@@ -4,6 +4,8 @@ import { MapPin, Star } from "lucide-react";
 import {
   DEMO_DIETITIAN_LEAD,
   getDietitianLocationLabel,
+  getGoogleMapsEmbedUrl,
+  getGoogleMapsSearchUrl,
   getDietitianTitle,
   normalizeDietitianLead,
   type DietitianLead,
@@ -54,6 +56,8 @@ export default async function DietitianPage({ params }: { params: Promise<{ id: 
   const title = getDietitianTitle(lead);
   const locationLabel = getDietitianLocationLabel(lead);
   const displayName = lead.name || "Diyetisyen";
+  const mapEmbedUrl = getGoogleMapsEmbedUrl(lead);
+  const mapSearchUrl = getGoogleMapsSearchUrl(lead);
 
   return (
     <div className="min-h-full bg-slate-50">
@@ -94,6 +98,29 @@ export default async function DietitianPage({ params }: { params: Promise<{ id: 
           </section>
         ) : null}
 
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="p-6">
+            <h2 className="mb-3 text-lg font-semibold text-slate-900">Harita</h2>
+            {lead.address ? (
+              <p className="mb-4 flex items-start gap-2 text-slate-700" data-testid="map-address">
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden />
+                <span>{lead.address}</span>
+              </p>
+            ) : null}
+            <a className="text-sm font-medium text-emerald-700 underline" href={mapSearchUrl} rel="noreferrer" target="_blank">
+              Google Maps'te aç
+            </a>
+          </div>
+          <iframe
+            className="h-80 w-full border-0"
+            src={mapEmbedUrl}
+            title={`${displayName} harita konumu`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </section>
+
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="mb-3 text-lg font-semibold text-slate-900">İletişim</h2>
           <ul className="space-y-2 text-slate-700">
@@ -107,13 +134,11 @@ export default async function DietitianPage({ params }: { params: Promise<{ id: 
                 </a>
               </li>
             ) : null}
-            {lead.google_maps_url ? (
-              <li>
-                <a className="text-emerald-700 underline" href={lead.google_maps_url} rel="noreferrer" target="_blank">
-                  Google Maps’te aç
-                </a>
-              </li>
-            ) : null}
+            <li>
+              <a className="text-emerald-700 underline" href={mapSearchUrl} rel="noreferrer" target="_blank">
+                Google Maps'te aç
+              </a>
+            </li>
           </ul>
         </section>
       </main>
