@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "clean-csv": "node scraper/clean-csv.js",
+    "test:clean-csv": "node --test scraper/clean-csv.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
