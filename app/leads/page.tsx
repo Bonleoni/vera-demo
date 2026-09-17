@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { UploadCloud, FileSpreadsheet, Sparkles, Copy, Check, Loader2 } from "lucide-react";
 
@@ -155,34 +155,41 @@ function isFilledValue(value: unknown): boolean {
   return true;
 }
 
-function getColumnLabel(key: string): string {
-  return key
-    .split("_")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toLocaleUpperCase("tr-TR") + part.slice(1))
-    .join(" ");
-}
+function calculateAvailableColumns(leadsData: LeadRow[]): AvailableColumn[] {
+  if (!leadsData || leadsData.length === 0) return [];
 
-function buildAvailableColumns(rows: LeadRow[]): AvailableColumn[] {
-  if (rows.length === 0) return [];
+  const labels: Record<string, string> = {
+    lead_number: "Lead No",
+    name: "Ad Soyad",
+    phone: "Telefon",
+    city: "Şehir",
+    district: "İlçe",
+    rating: "Puan",
+    review_count: "Yorum Sayısı",
+    instagram_url: "Instagram",
+    instagram: "Instagram",
+    address: "Adres",
+  };
 
-  const keys = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
+  const allKeys = Object.keys(leadsData[0]);
+  const total = leadsData.length;
 
-  return keys
+  return allKeys
     .map((key) => {
-      const filledCount = rows.filter((row) => isFilledValue(row[key])).length;
-      const fillRate = (filledCount / rows.length) * 100;
+      const filledCount = leadsData.filter((lead) => isFilledValue(lead[key])).length;
+      const fillRate = (filledCount / total) * 100;
 
       return {
         key,
-        label: getColumnLabel(key),
-        fillRate: Math.round(fillRate),
+        label: labels[key] || key.charAt(0).toLocaleUpperCase("tr-TR") + key.slice(1),
+        fillRate,
       };
-    });
+    })
+    .filter((column) => column.fillRate >= 10)
+    .sort((a, b) => b.fillRate - a.fillRate);
 }
 
 export default function LeadsPage() {
-  const [availableColumns, setAvailableColumns] = useState<AvailableColumn[]>([]);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -194,6 +201,11 @@ export default function LeadsPage() {
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [copiedRowIndex, setCopiedRowIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const availableColumns = useMemo(() => calculateAvailableColumns(rows), [rows]);
+
+  useEffect(() => {
+    setSelectedColumns(availableColumns.map((column) => column.key));
+  }, [availableColumns]);
 
   useEffect(() => {
     let isMounted = true;
@@ -203,7 +215,6 @@ export default function LeadsPage() {
         const response = await fetch("/api/leads");
         const payload = (await response.json()) as {
           data?: LeadRow[];
-          availableColumns?: AvailableColumn[];
           error?: string;
         };
 
@@ -214,14 +225,8 @@ export default function LeadsPage() {
         if (!isMounted) return;
 
         const nextRows = Array.isArray(payload.data) ? payload.data : [];
-        const nextAvailableColumns = Array.isArray(payload.availableColumns)
-          ? payload.availableColumns
-          : buildAvailableColumns(nextRows);
-        const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
 
         setRows(nextRows);
-        setSelectedColumns(nextColumnKeys);
-        setAvailableColumns(nextAvailableColumns);
         setLoadError(null);
       } catch (error) {
         if (!isMounted) return;
@@ -252,16 +257,6 @@ export default function LeadsPage() {
         const worksheet = workbook.Sheets[firstSheetName];
         const json = XLSX.utils.sheet_to_json<LeadRow>(worksheet, { defval: "" });
 
-        const detectedColumns =
-          json.length > 0
-            ? Object.keys(json[0])
-            : ((XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[] | undefined) ?? []);
-
-        const nextAvailableColumns = buildAvailableColumns(json);
-        const nextColumnKeys = nextAvailableColumns.map((column) => column.key);
-
-        setAvailableColumns(nextAvailableColumns);
-        setSelectedColumns(nextColumnKeys);
         setRows(json);
         setFileName(file.name);
         setEnrichedResults([]);
@@ -270,7 +265,6 @@ export default function LeadsPage() {
         setParseError(
           error instanceof Error ? error.message : "Excel dosyası okunurken bir hata oluştu.",
         );
-        setAvailableColumns([]);
         setSelectedColumns([]);
         setRows([]);
         setFileName(null);
