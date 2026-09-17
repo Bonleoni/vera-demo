@@ -204,6 +204,7 @@ export default function LeadsPage() {
   const availableColumns = useMemo(() => calculateAvailableColumns(rows), [rows]);
 
   useEffect(() => {
+    console.log("availableColumns hesaplandı:", availableColumns);
     setSelectedColumns(availableColumns.map((column) => column.key));
   }, [availableColumns]);
 
@@ -309,7 +310,7 @@ export default function LeadsPage() {
     fileInputRef.current?.click();
   };
 
-  const handleColumnVisibilityChange = (columnKey: string) => {
+  const handleColumnToggle = (columnKey: string) => {
     setSelectedColumns((current) =>
       current.includes(columnKey)
         ? current.filter((key) => key !== columnKey)
@@ -483,9 +484,9 @@ export default function LeadsPage() {
                   </button>
                 </div>
                 <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {availableColumns.map((column) => (
+                  {availableColumns.map((col) => (
                     <label
-                      key={column.key}
+                      key={col.key}
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -498,11 +499,12 @@ export default function LeadsPage() {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedColumns.includes(column.key)}
-                        onChange={() => handleColumnVisibilityChange(column.key)}
+                        value={col.key}
+                        checked={selectedColumns.includes(col.key)}
+                        onChange={(e) => handleColumnToggle(e.currentTarget.value)}
                       />
-                      {column.label}
-                      <span style={{ color: "#405166" }}>%{column.fillRate}</span>
+                      {col.label}
+                      <span style={{ color: "#405166" }}>%{Math.round(col.fillRate)}</span>
                     </label>
                   ))}
                 </div>
